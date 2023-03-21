@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>
+        Tic Tac Toe
+    </title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .board {
+            display: grid;
+            grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+            grid-gap: 0;
+            width: 300px;
+            height: 300px;
+            border: 5px solid #333;
+            background-color: #fff;
+        }
+
+        button {
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            border: 1px solid #000;
+            background-color: #fff;
+        }
+
+        button:hover {
+            background-color: #ddd;
+        }
+
+
+        /* Styles for my-button class */
+        .my-button {
+            background-color: #0069d9;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        /* Hover styles for my-button class */
+        .my-button:hover {
+            background-color: #3c4bcd;
+        }
+
+        /* Active (clicked) styles for my-button class */
+        .my-button:active {
+            background-color: #004a99;
+        }
+
+    </style>
+</head>
+<body>
+<div>
+    <div><h1 style="text-align:center" id="result_paragraph"></h1></div>
+    <div class="board" id="board_id">
+        <button class="cell" id="A1" onclick="render('A1')"></button>
+        <button class="cell" id="A2" onclick="render('A2')"></button>
+        <button class="cell" id="A3" onclick="render('A3')"></button>
+        <button class="cell" id="B1" onclick="render('B1')"></button>
+        <button class="cell" id="B2" onclick="render('B2')"></button>
+        <button class="cell" id="B3" onclick="render('B3')"></button>
+        <button class="cell" id="C1" onclick="render('C1')"></button>
+        <button class="cell" id="C2" onclick="render('C2')"></button>
+        <button class="cell" id="C3" onclick="render('C3')"></button>
+    </div>
+    <div>
+        <button class="my-button" onclick="render('RESET')">RESET</button>
+    </div>
+</div>
+
+<script>
+
+    function createBoard(){
+        const board = {
+        emptyPositions: ["A1", "A2", "A3", "B1", "B2", "B3", "C1", "C2", "C3"],
+        currentPlayer: null,
+        playerPositions: [[], []],
+        gameOver: false,
+        title: document.getElementById("result_paragraph")
+    }
+        return board
+    }
+
+    let board = createBoard()
+    board.currentPlayer = "O"
+    swapPlayer(board)
+    
+    function checkWin(playerPositions) {
+
+        const winCases = [
+            ["A1", "A2", "A3"],
+            ["B1", "B2", "B3"],
+            ["C1", "C2", "C3"],
+            ["A1", "B1", "C1"],
+            ["A2", "B2", "C2"],
+            ["A3", "B3", "C3"],
+            ["A1", "B2", "C3"],
+            ["A3", "B2", "C1"]
+        ]
+
+        for (let i = 0; i < winCases.length; i++) {
+            const [a, b, c] = winCases[i]
+            if (
+                board.playerPositions[board.currentPlayer === "O" ? 0 : 1].includes(a) &&
+                board.playerPositions[board.currentPlayer === "O" ? 0 : 1].includes(b) &&
+                board.playerPositions[board.currentPlayer === "O" ? 0 : 1].includes(c)
+            ) {
+                return true
+            }
+        }
+        return false
+    }
+
+    function render(position){
+
+        if(position === "RESET"){
+            let nodes = document.getElementsByClassName("cell")
+            for (let i = 0; i < nodes.length; i++) {
+                nodes[i].innerText = ""
+                nodes[i].disabled = false
+            }
+            const currentPlayer = board.currentPlayer
+            board = createBoard()
+            board.currentPlayer = currentPlayer
+            swapPlayer(board)
+        }
+        else{
+            const unchangedPositions = board.emptyPositions
+            board = placeMarker(position, board)
+            console.log(board.emptyPositions)
+            console.log(unchangedPositions)
+            if(unchangedPositions != board.emptyPositions){
+                document.getElementById(position).innerText = board.currentPlayer
+            }
+            if(board.gameOver){
+                let nodes = document.getElementsByClassName("cell")
+                for (let i = 0; i < nodes.length; i++) {
+                    nodes[i].disabled = true
+                }
+            }
+        }
+    }
+
+    function placeMarker(position, board) {
+        console.log(position)
+        if (!(board.emptyPositions.includes(position))) {
+            return board
+        }
+        // let index = board.emptyPositions.indexOf(position)
+        // board.emptyPositions.splice(index,1)
+        board.playerPositions[board.currentPlayer === "O" ? 0:1].push(position)
+        if (checkWin(board.playerPositions)){
+            board.currentPlayer = swapPlayer(board)
+            board.title.innerText = board.currentPlayer + " WON THE GAME!"
+            board.gameOver = true
+            board.emptyPositions = board.emptyPositions.filter(function(e) { return e !== position })
+            return board
+        }
+        if (board.emptyPositions.length === 0)
+        {
+            console.log("It's a draw")
+            board.currentPlayer = swapPlayer(board)
+            board.title.innerText = "IT'S A DRAW!"
+            board.gameOver = true
+            board.emptyPositions = board.emptyPositions.filter(function(e) { return e !== position })
+            return board
+        }
+
+        board.currentPlayer = swapPlayer(board)
+        board.emptyPositions = board.emptyPositions.filter(function(e) { return e !== position })
+
+        return board
+    }
+
+    function swapPlayer(board){
+        board.title.innerText = board.currentPlayer + "'s turn..."
+        board.currentPlayer = board.currentPlayer === "O" ? "X" : "O"
+        return board.currentPlayer
+    }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>
+        Tic Tac Toe
+    </title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .board {
+            display: grid;
+            grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+            grid-gap: 0;
+            width: 300px;
+            height: 300px;
+            border: 5px solid #333;
+            background-color: #fff;
+        }
+
+        button {
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            border: 1px solid #000;
+            background-color: #fff;
+        }
+
+        button:hover {
+            background-color: #ddd;
+        }
+
+
+        /* Styles for my-button class */
+        .my-button {
+            background-color: #0069d9;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        /* Hover styles for my-button class */
+        .my-button:hover {
+            background-color: #3c4bcd;
+        }
+
+        /* Active (clicked) styles for my-button class */
+        .my-button:active {
+            background-color: #004a99;
+        }
+
+    </style>
+</head>
+<body>
+<div>
+    <div><h1 style="text-align:center" id="result_paragraph"></h1></div>
+    <div class="board" id="board_id">
+        <button class="cell" id="A1" onclick="game.placeMarker('A1')"></button>
+        <button class="cell" id="A2" onclick="game.placeMarker('A2')"></button>
+        <button class="cell" id="A3" onclick="game.placeMarker('A3')"></button>
+        <button class="cell" id="B1" onclick="game.placeMarker('B1')"></button>
+        <button class="cell" id="B2" onclick="game.placeMarker('B2')"></button>
+        <button class="cell" id="B3" onclick="game.placeMarker('B3')"></button>
+        <button class="cell" id="C1" onclick="game.placeMarker('C1')"></button>
+        <button class="cell" id="C2" onclick="game.placeMarker('C2')"></button>
+        <button class="cell" id="C3" onclick="game.placeMarker('C3')"></button>
+    </div>
+    <div>
+        <button class="my-button" onclick="game.resetGame()">RESET</button>
+    </div>
+</div>
+
+<script>
+
+    class Player {
+        constructor(name, symbol, positions) {
+            this.name = name
+            this.symbol = symbol
+            this.positions = positions
+        }
+    }
+
+    class Game {
+
+        constructor(name1, name2) {
+            this.player0 = new Player(name1, "O", [])
+            this.player1 = new Player(name2, "X", [])
+            this.emptyPositions = ["A1", "A2", "A3", "B1", "B2", "B3", "C1", "C2", "C3"]
+            this.winCases = [
+                ["A1", "A2", "A3"],
+                ["B1", "B2", "B3"],
+                ["C1", "C2", "C3"],
+                ["A1", "B1", "C1"],
+                ["A2", "B2", "C2"],
+                ["A3", "B3", "C3"],
+                ["A1", "B2", "C3"],
+                ["A3", "B2", "C1"]
+            ]
+            this.currentPlayer = this.player0
+            // Initialize game variables
+            let cells = document.querySelectorAll(".cell")
+            let resultParagraph = document.getElementById("result_paragraph")
+            this.cells = cells
+            this.resultParagraph = resultParagraph
+            resultParagraph.textContent = this.currentPlayer.symbol + "'s turn..."
+            this.resultParagraph = resultParagraph
+        }
+
+        checkResult() {
+            return this.winCases.some(winCase => winCase.every(x => this.currentPlayer.positions.includes(x)))
+        }
+
+        getButton(position) {
+            document.getElementById(position).innerText = this.currentPlayer.symbol
+        }
+
+        placeMarker(position) {
+
+            console.log(this.emptyPositions)
+            if (this.emptyPositions.includes(position)) {
+                this.getButton(position)
+                this.currentPlayer.positions.push(position)
+                this.emptyPositions = this.emptyPositions.filter(x => x !== position)
+                let isWon = this.checkResult()
+
+                if (isWon) {
+                    this.resultParagraph.textContent = this.currentPlayer.symbol + " WON THE GAME!"
+                    this.swapPlayer()
+                    console.log("win")
+                    let nodes = document.getElementById("board_id").getElementsByTagName('*')
+                    for (let i = 0; i < nodes.length; i++) {
+                        nodes[i].disabled = true
+                    }
+                    return this.currentPlayer.symbol + " Wins!"
+                } else if (this.emptyPositions.length === 0) {
+                    console.log("draw")
+                    let nodes = document.getElementById("board_id").getElementsByTagName('*')
+                    for (let i = 0; i < nodes.length; i++) {
+                        nodes[i].disabled = true
+                    }
+
+                    this.resultParagraph.textContent = "IT'S A DRAW!"
+                    this.swapPlayer()
+                    return "It's a draw!"
+                } else {
+                    console.log("continue")
+                    this.swapPlayer()
+                    this.resultParagraph.textContent = (this.currentPlayer.symbol + "'s turn...")
+                    return "Continue"
+                }
+            }
+            console.log("occupied")
+            return "Occupied"
+        }
+
+        swapPlayer() {
+            if (this.currentPlayer === this.player0) {
+                this.currentPlayer = this.player1
+            } else {
+                this.currentPlayer = this.player0
+            }
+            return console.log(this.currentPlayer)
+        }
+
+        playerReset() {
+            this.player0.positions = []
+            this.player1.positions = []
+        }
+
+        resetGame() {
+            this.playerReset()
+            this.swapPlayer()
+            this.emptyPositions = ["A1", "A2", "A3", "B1", "B2", "B3", "C1", "C2", "C3"]
+            this.resultParagraph.textContent = this.currentPlayer.symbol + "'s turn..."
+            for (var i = 0; i < this.cells.length; i++) {
+                this.cells[i].disabled = false
+                this.cells[i].classList.remove()
+                this.cells[i].textContent = ""
+            }
+        }
+    }
+
+    let game = new Game("Player1", "Player2");
+</script>
+</body>
+</html>
